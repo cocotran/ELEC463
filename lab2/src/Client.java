@@ -12,12 +12,15 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 public class Client {
+
     private static JFrame frame = new JFrame();
     static boolean isConnected = false;
     private static Socket clientSocket;
+    static int step;
 
     public static void main(String[] args) {
         Client client = new Client();
+        step = 0;
 
 //		create frame
         frame.setBounds(100, 100, 500, 500);
@@ -34,46 +37,13 @@ public class Client {
         frame.getContentPane().add(connectButton);
         connectButton.addActionListener(new ConnectListener());
 
-//		count numbers
-        JLabel labelCountNumber = new JLabel("Counts of Numbers:");
-        labelCountNumber.setBounds(50, 100, 200, 20);
-        labelCountNumber.setFont(new Font("Times", Font.PLAIN, 12));
-        labelCountNumber.setHorizontalAlignment(SwingConstants.LEFT);
-        labelCountNumber.setVerticalAlignment(SwingConstants.CENTER);
-        frame.getContentPane().add(labelCountNumber);
+        if (isConnected && step >= 1) {
+            client.displayCountOfNumber();
+        }
 
-//		count of numbers input
-        JTextField countOfNumbers = new JTextField("");
-        countOfNumbers.setFont(new Font("Times", Font.PLAIN, 12));
-        countOfNumbers.setBounds(200, 100, 100, 30);
-        frame.getContentPane().add(countOfNumbers);
-
-//		set button
-        JButton setButton = new JButton("Set");
-        setButton.setBounds(330, 100, 100, 30);
-        frame.getContentPane().add(setButton);
-
-//		add numbers
-        JLabel labelAddNumber = new JLabel("Add Numbers to Message:");
-        labelAddNumber.setBounds(50, 150, 200, 20);
-        labelAddNumber.setFont(new Font("Times", Font.PLAIN, 12));
-        labelAddNumber.setHorizontalAlignment(SwingConstants.LEFT);
-        labelAddNumber.setVerticalAlignment(SwingConstants.CENTER);
-        frame.getContentPane().add(labelAddNumber);
-
-//		add numbers input
-        JTextField addNumber = new JTextField("");
-        addNumber.setFont(new Font("Times", Font.PLAIN, 12));
-        addNumber.setBounds(200, 150, 100, 30);
-        frame.getContentPane().add(addNumber);
-
-//		add button
-        JButton addButton = new JButton("Add");
-        addButton.setBounds(330, 150, 100, 30);
-        frame.getContentPane().add(addButton);
-
-
-
+        if (step >= 2) {
+            client.displayAddNumbers();
+        }
     }
 
     public void displayConnectStatus() {
@@ -95,8 +65,9 @@ public class Client {
 
     public static void connect() {
         try {
-            clientSocket = new Socket ("localhost", 6789);
+            clientSocket = new Socket ("localhost", Server.port);
             isConnected = true;
+            step = 1;
         } catch (IOException e) {
             System.out.println("Error: " + e);;
         }
@@ -106,9 +77,60 @@ public class Client {
         try {
             clientSocket.close();
             isConnected = false;
+            step = 0;
         } catch (IOException e) {
             System.out.println("Error: " + e);;
         }
+    }
+
+    public void displayCountOfNumber() {
+        if (isConnected) {
+//		    count numbers
+            JLabel labelCountNumber = new JLabel("Counts of Numbers:");
+            labelCountNumber.setBounds(50, 100, 200, 20);
+            labelCountNumber.setHorizontalAlignment(SwingConstants.LEFT);
+            labelCountNumber.setVerticalAlignment(SwingConstants.CENTER);
+            frame.getContentPane().add(labelCountNumber);
+
+//		    count of numbers input
+            JTextField countOfNumbers = new JTextField("");
+            countOfNumbers.setBounds(200, 100, 100, 30);
+            frame.getContentPane().add(countOfNumbers);
+
+//		    set button
+            JButton setButton = new JButton("Set");
+            setButton.setBounds(330, 100, 100, 30);
+            frame.getContentPane().add(setButton);
+
+            if (step > 1) {
+                // TODO: disable it
+            }
+            else {
+                labelCountNumber.setFont(new Font("Times", Font.BOLD, 12));
+                countOfNumbers.setFont(new Font("Times", Font.PLAIN, 12));
+            }
+        }
+    }
+
+    public void displayAddNumbers() {
+//		add numbers
+        JLabel labelAddNumber = new JLabel("Add Numbers to Message:");
+        labelAddNumber.setBounds(50, 150, 200, 20);
+        labelAddNumber.setFont(new Font("Times", Font.PLAIN, 12));
+        labelAddNumber.setHorizontalAlignment(SwingConstants.LEFT);
+        labelAddNumber.setVerticalAlignment(SwingConstants.CENTER);
+        frame.getContentPane().add(labelAddNumber);
+
+//		add numbers input
+        JTextField addNumber = new JTextField("");
+        addNumber.setFont(new Font("Times", Font.PLAIN, 12));
+        addNumber.setBounds(200, 150, 100, 30);
+        frame.getContentPane().add(addNumber);
+
+//		add button
+        JButton addButton = new JButton("Add");
+        addButton.setBounds(330, 150, 100, 30);
+        frame.getContentPane().add(addButton);;
     }
 }
 
