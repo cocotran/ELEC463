@@ -75,7 +75,6 @@ public class Client {
         // send text area
         sendTextArea = new JTextArea();
         sendTextArea.setBounds(20, 480, 300, 300);
-        sendTextArea.setEditable(false);
         frame.getContentPane().add(sendTextArea);
         sendTextArea.setVisible(false);
 
@@ -96,25 +95,27 @@ public class Client {
 
                     if (connectButton.getText().equals("Connect")) { //if pressed to connect
 
-                        // create a new socket to connect with the server application
-                        clientSocket = new Socket ("localhost", 6789);
-
                         clientName = clientNameTextField.getText();
 
-                        // call function StartThread
-                        StartThread();
+                        if (!clientName.equals("")) {
+                            // create a new socket to connect with the server application
+                            clientSocket = new Socket ("localhost", 6789);
 
-                        //make the GUI components visible, so the client can send and receive messages
-                        clientNameTextField.setEditable(false);
-                        receivedTextArea.setVisible(true);
-                        receivedTextAreaScroll.setVisible(true);
-                        sendToLabel.setVisible(true);
-                        sendToTextField.setVisible(true);
-                        sendTextArea.setVisible(true);
-                        sendButton.setVisible(true);
+                            // call function StartThread
+                            StartThread();
 
-                        // change the Connect button text to disconnect
-                        connectButton.setText("Disconnect");
+                            //make the GUI components visible, so the client can send and receive messages
+                            clientNameTextField.setEditable(false);
+                            receivedTextArea.setVisible(true);
+                            receivedTextAreaScroll.setVisible(true);
+                            sendToLabel.setVisible(true);
+                            sendToTextField.setVisible(true);
+                            sendTextArea.setVisible(true);
+                            sendButton.setVisible(true);
+
+                            // change the Connect button text to disconnect
+                            connectButton.setText("Disconnect");
+                        }
 
                     } else { // if pressed to disconnect
 
@@ -183,6 +184,26 @@ public class Client {
             }
         });
 
+        // send button
+        sendButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    String toClient;
+                    if (sendToTextField.getText().equals(""))
+                        toClient = "ALL_CLIENTS";
+                    else
+                        toClient = sendToTextField.getText();
+
+                    DataOutputStream outToServer = new DataOutputStream (clientSocket.getOutputStream());
+                    outToServer.writeBytes("-Message," + sendTextArea.getText() + "," + toClient + "," + clientName + "\n");
+
+                    sendTextArea.setText("");
+
+                } catch (Exception er) {}
+            }
+        });
+
         frame.setVisible(true);
 
     }
@@ -226,6 +247,16 @@ public class Client {
                         else {
                             receivedTextArea.append(strings[1] + " is connected." + "\n");
                         }
+                    }
+
+                    else if (receivedSentence.startsWith("-Message")) {
+                        String []strings = receivedSentence.split(",");
+
+                        if (strings[2].equals(clientName)) {
+                            receivedTextArea.append("You: " + strings[1] + "\n");
+                        }
+                        else
+                            receivedTextArea.append(strings[2] + ": " + strings[1] + "\n");
                     }
 
                 }

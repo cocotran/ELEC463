@@ -115,13 +115,28 @@ public class Server {
         }
     }
 
-    private ArrayList<Socket> getAllConnectionSocket() {
-        ArrayList<Socket> allSocket = new ArrayList<Socket>();
-        for (int i=0; i < Clients.size(); i++) {
-            allSocket.add(Clients.get(i).connectionSocket);
+    public static void sendMessage(String message, String toClientName,String fromClient) throws IOException {
+        DataOutputStream outToClient;
+        if (toClientName.equals("ALL_CLIENTS")) { // no client specified
+            for (int i=0; i < Clients.size(); i++) {
+                outToClient = new DataOutputStream(Clients.get(i).connectionSocket.getOutputStream());
+                outToClient.writeBytes("-Message," + message + "," + fromClient + "\n");
+            }
         }
-        return allSocket;
+
+        else { // to a specific client
+            for (int i=0; i < Clients.size(); i++) {
+                if (Clients.get(i).name.equals(toClientName)) {
+                    outToClient = new DataOutputStream(Clients.get(i).connectionSocket.getOutputStream());
+                    outToClient.writeBytes("-Message," + message + "," + fromClient + "\n");
+                }
+            }
+        }
+
     }
+
+
+
 
 
 }

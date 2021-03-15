@@ -59,6 +59,12 @@ public class ClientThread extends Thread{
                     Server.sendJoinedNameMessage(name);
                 }
 
+                else if (clientSentence.startsWith("-Message")) {
+                    String []strings = clientSentence.split(",");
+
+                    Server.sendMessage(strings[1], strings[2], strings[3]);
+                }
+
             }
 
 
