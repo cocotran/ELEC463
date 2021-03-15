@@ -1,7 +1,6 @@
 package chatroom;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -13,9 +12,10 @@ import java.net.Socket;
 
 public class Client {
 
-    static Socket clientSocket;
-    static JTextArea receivedTextArea;
-    static JTextArea sendTextArea;
+    private static Socket clientSocket;
+    private static JTextArea receivedTextArea;
+    private static JTextArea sendTextArea;
+    private static String clientName = "";
 
     public static void main(String[] args) throws Exception {
 
@@ -99,8 +99,10 @@ public class Client {
                         // create a new socket to connect with the server application
                         clientSocket = new Socket ("localhost", 6789);
 
+                        clientName = clientNameTextField.getText();
+
                         // call function StartThread
-//                        StartThread();
+                        StartThread();
 
                         //make the GUI components visible, so the client can send and receive messages
                         clientNameTextField.setEditable(false);
@@ -122,6 +124,8 @@ public class Client {
 
                         // close the client's socket
                         clientSocket.close();
+
+                        clientName = "";
 
                         // make the GUI components invisible
                         clientNameTextField.setEditable(true);
@@ -154,6 +158,8 @@ public class Client {
 
                     // close the client's socket
                     clientSocket.close();
+
+                    clientName = "";
 
                     // make the GUI components invisible
                     clientNameTextField.setEditable(true);
@@ -195,34 +201,33 @@ public class Client {
 
                 // create a buffer reader and connect it to the socket's input stream
                 BufferedReader inFromServer = new BufferedReader (new InputStreamReader(clientSocket.getInputStream()));
-
                 String receivedSentence;
+
+                //create an output stream
+                DataOutputStream outToServer = new DataOutputStream (clientSocket.getOutputStream());
 
                 // always read received messages and append them to the textArea
                 while (true) {
 
                     receivedSentence = inFromServer.readLine();
-                    // System.out.println(receivedSentence);
+                     System.out.println(receivedSentence);
 
-                    if (receivedSentence.startsWith("-Date")) {
-
-                        String []strings = receivedSentence.split(";");
-//                        dateLabel.setText("Server's Date: " + strings[1]);
-
-                    } else if (receivedSentence.startsWith("-Results")) {
-
-                        String []strings = receivedSentence.split(",");
-                        receivedTextArea.setText("Sum is: " + strings[1] + "\n");
-                        receivedTextArea.append("Average is: " + strings[2] + "\n");
-                        receivedTextArea.append("Minimum is: " + strings[3] + "\n");
-                        receivedTextArea.append("Maximum is: " + strings[4]);
-
-                    } else if (receivedSentence.startsWith("-Count")) {
-
-                        String []strings = receivedSentence.split(",");
-//                        countLabel.setText("Number of connected clients to the server: " + strings[1] + "\n");
-
+                    if (receivedSentence.startsWith("-Connected")) {
+                        outToServer.writeBytes("-Name," + clientName + "\n");
                     }
+
+                    else if (receivedSentence.startsWith("-Joined")) {
+                        String []strings = receivedSentence.split(",");
+
+                        if (strings[1].equals(clientName)) {
+                            receivedTextArea.setText("You are connected." + "\n");
+                        }
+
+                        else {
+                            receivedTextArea.append(strings[1] + " is connected." + "\n");
+                        }
+                    }
+
                 }
 
             }
@@ -232,6 +237,7 @@ public class Client {
 
 
         }}).start();
-
     }
+
+
 }

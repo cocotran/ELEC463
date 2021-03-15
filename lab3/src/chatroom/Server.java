@@ -1,27 +1,22 @@
 package chatroom;
 
-import method3.clientThread;
-
 import javax.swing.*;
 import java.awt.*;
-import java.io.BufferedReader;
 import java.io.DataOutputStream;
-import java.io.InputStreamReader;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 public class Server {
 
-    //Array of type ClientServiceThread, for all connected clients
-    public static ArrayList<clientThread> Clients = new ArrayList<clientThread>();
-    static int clientCount = 0;
+    // Array of type ClientServiceThread, for all connected clients
+    private static ArrayList<ClientThread> Clients = new ArrayList<ClientThread>();
+    private static int clientCount = 0;
 
     public static void main(String[] args) throws Exception {
 
-        //Create the GUI frame and components
+        // Create the GUI frame and components
         JFrame frame = new JFrame ("Chatting Server");
         frame.setLayout(null);
         frame.setBounds(100, 100, 300, 300);
@@ -33,10 +28,10 @@ public class Server {
         connectionStatusLabel.setForeground(Color.red);
         frame.getContentPane().add(connectionStatusLabel);
 
-        //create the welcoming server's socket
+        // create the welcoming server's socket
         ServerSocket welcomeSocket = new ServerSocket(6789);
 
-        //thread to always listen for new connections from clients
+        // thread to always listen for new connections from clients
         new Thread (new Runnable(){ @Override
         public void run() {
 
@@ -46,19 +41,18 @@ public class Server {
             while (!welcomeSocket.isClosed()) {
 
                 try {
-
-                    //when a new client connect, accept this connection and assign it to a new connection socket
+                    // when a new client connect, accept this connection and assign it to a new connection socket
                     connectionSocket = welcomeSocket.accept();
 
-                    //create a new output stream and send the message "You are connected" to the client
+                    // create a new output stream and send the message "You are connected" to the client
                     outToClient = new DataOutputStream(connectionSocket.getOutputStream());
                     outToClient.writeBytes("-Connected\n");
 
                     clientCount++;
 
-                    //add the new client to the client's array
-                    Clients.add(new clientThread(clientCount, connectionSocket, Clients));
-                    //start the new client's thread
+                    // add the new client to the client's array
+                    Clients.add(new ClientThread(clientCount, connectionSocket, Clients));
+                    // start the new client's thread
                     Clients.get(Clients.size() - 1).start();
 
                 }
@@ -72,17 +66,15 @@ public class Server {
 
 
 
-        //thread to always get the count of connected clients and update the label and send to clients
+        // thread to always get the count of connected clients and update the label
         new Thread (new Runnable(){ @Override
         public void run() {
 
             try {
 
-                DataOutputStream outToClient;
-
                 while (true) {
 
-                    if (Clients.size() > 0) //if there are one or more clients print their number
+                    if (Clients.size() > 0)
                     {
                         if (Clients.size() == 1)
                             connectionStatusLabel.setText("1 Client Connected");
@@ -99,46 +91,6 @@ public class Server {
                     }
 
 
-                    for (int i = 0; i < Clients.size(); i++) {
-
-                        outToClient = new DataOutputStream(Clients.get(i).connectionSocket.getOutputStream());
-                        outToClient.writeBytes("-Count, " + Clients.size() + "\n");
-
-                    }
-
-                    Thread.sleep(1000);
-
-                }
-
-            } catch (Exception ex) {
-
-            }
-
-        }}).start();
-
-
-        //thread to always get the date and send to clients
-        new Thread (new Runnable(){ @Override
-        public void run() {
-
-            try {
-
-                DataOutputStream outToClient;
-
-                while (true) {
-
-                    Date now = new Date();
-                    SimpleDateFormat dateFormatter = new SimpleDateFormat("EEEE, MMMM d, yyyy  h:m:s a z");
-
-                    //System.out.println(dateFormatter.format(now));
-
-                    for (int i = 0; i < Clients.size(); i++) {
-
-                        outToClient = new DataOutputStream(Clients.get(i).connectionSocket.getOutputStream());
-                        outToClient.writeBytes("-Date;" + dateFormatter.format(now) + "\n");
-
-                    }
-
                     Thread.sleep(1000);
 
                 }
@@ -154,4 +106,22 @@ public class Server {
         frame.setVisible(true);
 
     }
+
+    public static void sendJoinedNameMessage(String name) throws IOException {
+        DataOutputStream outToClient;
+        for (int i=0; i < Clients.size(); i++) {
+            outToClient = new DataOutputStream(Clients.get(i).connectionSocket.getOutputStream());
+            outToClient.writeBytes("-Joined," + name + "\n");
+        }
+    }
+
+    private ArrayList<Socket> getAllConnectionSocket() {
+        ArrayList<Socket> allSocket = new ArrayList<Socket>();
+        for (int i=0; i < Clients.size(); i++) {
+            allSocket.add(Clients.get(i).connectionSocket);
+        }
+        return allSocket;
+    }
+
+
 }
