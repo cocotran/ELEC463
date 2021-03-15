@@ -65,6 +65,12 @@ public class ClientThread extends Thread{
                     Server.sendMessage(strings[1], strings[2], strings[3]);
                 }
 
+                else if (clientSentence.startsWith("-Disconnect")) {
+                    String []client = clientSentence.split(",");
+
+                    Server.sendDisconnectMessage(client[1]);
+                }
+
             }
 
 

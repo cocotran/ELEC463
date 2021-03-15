@@ -136,7 +136,13 @@ public class Server {
     }
 
 
-
+    public static void sendDisconnectMessage(String name) throws IOException {
+        DataOutputStream outToClient;
+        for (int i=0; i < Clients.size(); i++) {
+            outToClient = new DataOutputStream(Clients.get(i).connectionSocket.getOutputStream());
+            outToClient.writeBytes("-Disconnect," + name + "\n");
+        }
+    }
 
 
 }

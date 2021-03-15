@@ -97,7 +97,7 @@ public class Client {
 
                         clientName = clientNameTextField.getText();
 
-                        if (!clientName.equals("")) {
+                        if (! (clientName.equals("") || clientName.equals("ALL_USERS"))) {
                             // create a new socket to connect with the server application
                             clientSocket = new Socket ("localhost", 6789);
 
@@ -121,6 +121,9 @@ public class Client {
 
                         // create an output stream and send a Remove message to disconnect from the server
                         DataOutputStream outToServer = new DataOutputStream (clientSocket.getOutputStream());
+
+                        outToServer.writeBytes("-Disconnect," + clientName + "\n");
+
                         outToServer.writeBytes("-Remove\n");
 
                         // close the client's socket
@@ -257,6 +260,12 @@ public class Client {
                         }
                         else
                             receivedTextArea.append(strings[2] + ": " + strings[1] + "\n");
+                    }
+
+                    else if (receivedSentence.startsWith("-Disconnect")) {
+                        String []strings = receivedSentence.split(",");
+
+                        receivedTextArea.append(strings[1] + " disconnected." + "\n");
                     }
 
                 }
